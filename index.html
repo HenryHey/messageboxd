@@ -1,0 +1,151 @@
+<canvas id="myCanvas" width="800" height="400" style="border:1px solid black;">
+</canvas>
+
+<script>
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+    const imageEl = new Image();
+    imageEl.src = "tileset_2.png";
+
+    const tile_size = 8;
+
+    // Wait for the image to load before processing
+    imageEl.onload = function () {
+        // Calculate the number of tiles in the tileset
+        const tilesPerRow = Math.floor(imageEl.width / tile_size);
+        const tilesPerColumn = Math.floor(imageEl.height / tile_size);
+        const totalTiles = tilesPerRow * tilesPerColumn;
+        // Create an array to store our tiles
+        const tiles = [];
+        let transparent_tile_added = false;
+
+        // Extract each tile from the tileset
+        for (let y = 0; y < tilesPerColumn; y++) {
+            for (let x = 0; x < tilesPerRow; x++) {
+                // Create a temporary canvas for each tile
+                const tileCanvas = document.createElement('canvas');
+                tileCanvas.width = tile_size;
+                tileCanvas.height = tile_size;
+                const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true, alpha: true });
+
+                // Clear the tile canvas to ensure transparency
+                tileCtx.clearRect(0, 0, tile_size, tile_size);
+
+                // Draw the tile portion from the tileset to the temporary canvas
+                tileCtx.drawImage(
+                    imageEl,
+                    x * tile_size, y * tile_size, tile_size, tile_size,
+                    0, 0, tile_size, tile_size
+                );
+
+                // Get image data to process transparency
+                const imageData = tileCtx.getImageData(0, 0, tile_size, tile_size);
+                const data = imageData.data;
+
+                // Define the green color to be treated as transparent (common tileset green is #00FF00)
+                const targetGreen = [0, 184, 0];
+                const tolerance = 2; // Allow some color variation
+
+                // Process each pixel
+                let transparent_pixels = 0;
+                for (let i = 0; i < data.length; i += 4) {
+                    const red = data[i];
+                    const green = data[i + 1];
+                    const blue = data[i + 2];
+
+                    // Check if the pixel is close to our target green
+                    if (Math.abs(red - targetGreen[0]) < tolerance &&
+                        Math.abs(green - targetGreen[1]) < tolerance &&
+                        Math.abs(blue - targetGreen[2]) < tolerance) {
+                        // Set alpha to 0 (transparent)
+                        data[i + 3] = 0;
+                        transparent_pixels++;
+                    }
+                }
+
+                // Put the modified image data back
+                tileCtx.putImageData(imageData, 0, 0);
+
+                if (!transparent_tile_added && transparent_pixels == 8 * 8) {
+                    transparent_tile_added = true;
+                    tiles.push(tileCanvas);
+                    space_tile = tiles.length - 1;
+                }
+
+                // Add the tile canvas to our array
+                if (transparent_pixels < 8 * 8 * 0.70) {
+                    tiles.push(tileCanvas);
+                }
+            }
+        }
+        first_letter_tile = 72;
+        for (let i = first_letter_tile; i < tiles.length; i++) {
+            drawTile(tiles[i], 100 + (i - first_letter_tile) * tile_size, 50);
+        }
+
+        console.log(`Loaded ${tiles.length} tiles from tileset`);
+
+        const first_border_tile = 171;
+        const borders = loadBorders(tiles, first_border_tile);
+        drawBorders(borders, 100 - tile_size * 2, 100 - tile_size * 2, 50, 10);
+
+        const letter_tiles = loadLetterTiles(tiles, first_letter_tile, space_tile);
+        drawText(letter_tiles, "Hello! How are you?");
+    };
+
+    function drawTile(tile, x, y) {
+        ctx.drawImage(tile, x, y, tile_size, tile_size);
+    }
+
+    function loadLetterTiles(tiles, first_letter_tile, space_tile) {
+        const letters = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?\":;#+%=";
+        const letter_tiles = { " ": tiles[space_tile] };
+        for (let i = 1; i < letters.length; i++) {
+            letter_tiles[letters[i]] = tiles[first_letter_tile + i];
+        }
+        return letter_tiles;
+    }
+
+    function loadBorders(tiles, first_border_tile) {
+        const borders = {
+            "top-left": tiles[first_border_tile],
+            "top": tiles[first_border_tile + 1],
+            "top-right": tiles[first_border_tile + 3],
+            "left": tiles[first_border_tile + 4],
+            "right": tiles[first_border_tile + 5],
+            "bottom-left": tiles[first_border_tile + 8],
+            "bottom": tiles[first_border_tile + 9],
+            "bottom-right": tiles[first_border_tile + 11],
+            "fill": tiles[first_border_tile + 12]
+        }
+        return borders;
+    }
+
+    function drawText(letter_tiles, text) {
+        for (let i = 0; i < text.length; i++) {
+            drawTile(letter_tiles[text[i]], 100 + i * (tile_size), 100);
+        }
+    }
+
+    function drawBorders(borders, x, y, width, height) {
+        drawTile(borders["top-left"], x, y);
+        for (let i = 1; i < width; i++) {
+            drawTile(borders["top"], x + i * tile_size, y);
+            drawTile(borders["bottom"], x + i * tile_size, y + height * tile_size);
+        }
+        drawTile(borders["top-right"], x + width * tile_size, y);
+        for (let i = 1; i < height; i++) {
+            drawTile(borders["left"], x, y + i * tile_size);
+            drawTile(borders["right"], x + width * tile_size, y + i * tile_size);
+        }
+        drawTile(borders["bottom-left"], x, y + height * tile_size);
+        drawTile(borders["bottom-right"], x + width * tile_size, y + height * tile_size);
+        for (let i = 1; i < width; i++) {
+            for (let j = 1; j < height; j++) {
+                drawTile(borders["fill"], x + i * tile_size, y + j * tile_size);
+            }
+        }
+    }
+
+
+</script>
