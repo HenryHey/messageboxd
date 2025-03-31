@@ -42,55 +42,31 @@
                 const imageData = tileCtx.getImageData(0, 0, tile_size, tile_size);
                 const data = imageData.data;
 
-                // Define the green color to be treated as transparent (common tileset green is #00FF00)
-                const targetGreen = [0, 184, 0];
-                const tolerance = 2; // Allow some color variation
-
-                // Process each pixel
                 let transparent_pixels = 0;
                 for (let i = 0; i < data.length; i += 4) {
-                    const red = data[i];
-                    const green = data[i + 1];
-                    const blue = data[i + 2];
-
-                    // Check if the pixel is close to our target green
-                    if (Math.abs(red - targetGreen[0]) < tolerance &&
-                        Math.abs(green - targetGreen[1]) < tolerance &&
-                        Math.abs(blue - targetGreen[2]) < tolerance) {
-                        // Set alpha to 0 (transparent)
-                        data[i + 3] = 0;
-                        transparent_pixels++;
-                    }
+                    if (data[i + 3] === 0) transparent_pixels++;
                 }
 
-                // Put the modified image data back
-                tileCtx.putImageData(imageData, 0, 0);
-
-                if (!transparent_tile_added && transparent_pixels == 8 * 8) {
+                if (!transparent_tile_added && transparent_pixels == tile_size * tile_size) {
                     transparent_tile_added = true;
-                    tiles.push(tileCanvas);
-                    space_tile = tiles.length - 1;
+                    space_tile = tiles.push(tileCanvas) - 1;
                 }
 
-                // Add the tile canvas to our array
-                if (transparent_pixels < 8 * 8 * 0.70) {
+                // Add the tile canvas to our array if it's less than 70% transparent
+                if (transparent_pixels < tile_size * tile_size * 0.70) {
                     tiles.push(tileCanvas);
                 }
             }
-        }
-        first_letter_tile = 72;
-        for (let i = first_letter_tile; i < tiles.length; i++) {
-            drawTile(tiles[i], 100 + (i - first_letter_tile) * tile_size, 50);
         }
 
         console.log(`Loaded ${tiles.length} tiles from tileset`);
 
         const first_border_tile = 171;
         const borders = loadBorders(tiles, first_border_tile);
-        drawBorders(borders, 100 - tile_size * 2, 100 - tile_size * 2, 50, 10);
 
+        const first_letter_tile = 72;
         const letter_tiles = loadLetterTiles(tiles, first_letter_tile, space_tile);
-        drawText(letter_tiles, "Hello! How are you?");
+        drawMessageBox("Hello! How are you?", 10, 10, borders, letter_tiles);
     };
 
     function drawTile(tile, x, y) {
@@ -121,13 +97,13 @@
         return borders;
     }
 
-    function drawText(letter_tiles, text) {
+    function drawText(text, x, y, letter_tiles) {
         for (let i = 0; i < text.length; i++) {
-            drawTile(letter_tiles[text[i]], 100 + i * (tile_size), 100);
+            drawTile(letter_tiles[text[i]], x + i * (tile_size), y);
         }
     }
 
-    function drawBorders(borders, x, y, width, height) {
+    function drawBackground(borders, x, y, width, height) {
         drawTile(borders["top-left"], x, y);
         for (let i = 1; i < width; i++) {
             drawTile(borders["top"], x + i * tile_size, y);
@@ -147,5 +123,9 @@
         }
     }
 
+    function drawMessageBox(text, x, y, border_tiles, letter_tiles) {
+        drawBackground(border_tiles, x, y, text.length + 2, 10);
+        drawText(text, x + tile_size, y + tile_size, letter_tiles);
+    }
 
 </script>
