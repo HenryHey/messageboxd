@@ -104,6 +104,13 @@
     }
 
     function drawBackground(borders, x, y, width, height) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+        gradient.addColorStop(0, "#484890"); // `rgba(100, 100, 255, 1)`);
+        gradient.addColorStop(1, "#282870"); // `rgba(0, 0, 255, 1)`);
+        for (let i = 1; i < width; i++) {
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, y, width * tile_size, height * tile_size);
+        }
         drawTile(borders["top-left"], x, y);
         for (let i = 1; i < width; i++) {
             drawTile(borders["top"], x + i * tile_size, y);
@@ -116,11 +123,7 @@
         }
         drawTile(borders["bottom-left"], x, y + height * tile_size);
         drawTile(borders["bottom-right"], x + width * tile_size, y + height * tile_size);
-        for (let i = 1; i < width; i++) {
-            for (let j = 1; j < height; j++) {
-                drawTile(borders["fill"], x + i * tile_size, y + j * tile_size);
-            }
-        }
+
     }
 
     function drawMessageBox(text, x, y, border_tiles, letter_tiles) {
