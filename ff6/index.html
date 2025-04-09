@@ -1,0 +1,115 @@
+<canvas id="myCanvas" width="800" height="400" style="border:1px solid black;">
+</canvas>
+
+<div style="margin-top: 10px;">
+    <input type="text" id="textInput" placeholder="Enter text here..." value="Hello! How are you?">
+    <button id="updateButton">Update Text</button>
+</div>
+
+<script>
+    // Load character widths from widths.json
+    let charWidths = {};
+    let letterTiles = {};
+
+    function loadCharWidths(tiles) {
+        fetch('widths.json')
+            .then(response => response.json())
+            .then(data => {
+                charWidths = data;
+                console.log('Character widths loaded successfully');
+                for (const [ascii_code, width] of Object.entries(charWidths)) {
+                    console.log(ascii_code, String.fromCharCode(ascii_code), width);
+                }
+                for (const [ascii_code, width] of Object.entries(charWidths)) {
+                    letterTiles[String.fromCharCode(ascii_code)] = tiles[parseInt(ascii_code)];
+                }
+            })
+            .catch(error => {
+                console.error('Error loading character widths:', error);
+            });
+    }
+
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+    const imageEl = new Image();
+    imageEl.src = "variable_width_font.png";
+
+    const tile_size = 13;
+    const numberOfTiles = 96;
+
+    // Wait for the image to load before processing
+    imageEl.onload = function () {
+        // Calculate the number of tiles in the tileset
+        const tiles = [];
+
+        // Extract each tile from the tileset
+        for (let i = 0; i < numberOfTiles; i++) {
+            // Create a temporary canvas for each tile
+            const tileCanvas = document.createElement('canvas');
+            tileCanvas.width = tile_size;
+            tileCanvas.height = tile_size;
+            const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true, alpha: true });
+
+            // Clear the tile canvas to ensure transparency
+            tileCtx.clearRect(0, 0, tile_size, tile_size);
+
+            // Draw the tile portion from the tileset to the temporary canvas
+            tileCtx.drawImage(
+                imageEl,
+                i * tile_size, 0, tile_size, tile_size,
+                0, 0, tile_size, tile_size
+            );
+
+            tiles.push(tileCanvas);
+        }
+
+        console.log(`Loaded ${tiles.length} tiles from tileset`);
+        loadCharWidths();
+
+        for (let i = 0; i < numberOfTiles; i++) {
+            drawTile(tiles[i], 10 + i * tile_size, 10);
+        }
+        letterTiles = loadLetterTiles(tiles);
+
+        // Draw initial text
+        const initialText = document.getElementById("textInput").value;
+        drawText(initialText, 18, 80, letterTiles);
+
+        // Add event listener to the update button
+        document.getElementById("updateButton").addEventListener("click", updateText);
+    };
+
+    // Function to update text from input field
+    function updateText() {
+        const text = document.getElementById("textInput").value;
+        // Clear the text area first
+        ctx.clearRect(0, 50, canvas.width, 100);
+        // Draw the new text
+        drawText(text, 18, 80, letterTiles);
+    }
+
+    function drawTile(tile, x, y) {
+        ctx.drawImage(tile, x, y, tile_size, tile_size);
+    }
+
+    function loadLetterTiles(tiles) {
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.,_;#+()%~*@π............. ";
+        const letter_tiles = {};
+        for (let i = 0; i < letters.length; i++) {
+            letter_tiles[letters[i]] = tiles[i];
+        }
+        return letter_tiles;
+    }
+
+    function drawText(text, x, y, letter_tiles) {
+        if (Object.keys(charWidths).length === 0) return;
+
+        let cursorPos = 0;
+        console.log("Cursor pos: ", cursorPos);
+        for (let i = 0; i < text.length; i++) {
+            drawTile(letter_tiles[text[i]], x + cursorPos, y);
+            cursorPos += charWidths[text.charCodeAt(i)];
+            console.log(cursorPos, text[i], charWidths[text.charCodeAt(i)]);
+        }
+    }
+</script>
