@@ -66,9 +66,6 @@
         console.log(`Loaded ${tiles.length} tiles from tileset`);
         loadCharWidths();
 
-        for (let i = 0; i < numberOfTiles; i++) {
-            drawTile(tiles[i], 10 + i * tile_size, 10);
-        }
         letterTiles = loadLetterTiles(tiles);
 
         // Draw initial text
