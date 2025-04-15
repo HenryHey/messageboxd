@@ -9,3 +9,5 @@ Gemfile.lock
 
 # Original ignores
 *.smc
+
+.DS_Store
