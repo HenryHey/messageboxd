@@ -1,1 +1,13 @@
+# Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+vendor/
+.bundle/
+Gemfile.lock
+
+# Original ignores
 *.smc
+
+.DS_Store
