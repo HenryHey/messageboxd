@@ -1,9 +1,29 @@
-<canvas id="myCanvas" width="800" height="400" style="border:1px solid black;">
-</canvas>
+<!doctype html>
+<html>
 
-<div style="margin-top: 10px;">
-    <input type="text" id="textInput" placeholder="Enter text here..." value="Hello! How are you?">
-    <button id="updateButton">Update Text</button>
+<head>
+    <meta charset="utf-8">
+    <title>FF6</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">messageboxd</h1>
+        </div>
+    </div>
+    <div class="container">
+    <div style="position: relative; margin: 0 auto; width: 240px;">
+        <img src="background.png" style="position: absolute; top: 0; left: 0;" />
+        <canvas id="myCanvas" width="240" height="72" style="position: absolute; top: 0; left: 0; z-index: 1;">
+        </canvas>
+    </div>
+
+    <div style="margin-top: 200px;">
+        <input type="text" id="textInput" placeholder="Enter text here..." value="Hello! How are you?">
+        <button id="updateButton">Update Text</button>
+    </div>
 </div>
 
 <script>
@@ -70,7 +90,7 @@
 
         // Draw initial text
         const initialText = document.getElementById("textInput").value;
-        drawText(initialText, 18, 80, letterTiles);
+        drawText(initialText, 16, 16, letterTiles);
 
         // Add event listener to the update button
         document.getElementById("updateButton").addEventListener("click", updateText);
@@ -82,7 +102,7 @@
         // Clear the text area first
         ctx.clearRect(0, 50, canvas.width, 100);
         // Draw the new text
-        drawText(text, 18, 80, letterTiles);
+        drawText(text, 8, 8, letterTiles);
     }
 
     function drawTile(tile, x, y) {
@@ -110,3 +130,6 @@
         }
     }
 </script>
+</body>
+
+</html>
