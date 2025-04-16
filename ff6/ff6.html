@@ -2,17 +2,15 @@
 layout: default
 title: FF6
 ---
-<div class="container">
-    <div style="position: relative; margin: 0 auto; width: 240px;">
-        <img src="background.png" style="position: absolute; top: 0; left: 0;" />
-        <canvas id="myCanvas" width="240" height="72" style="position: absolute; top: 0; left: 0; z-index: 1;">
-        </canvas>
-    </div>
+<div style="position: relative; margin: 0 auto; width: 240px;">
+    <img src="background.png" style="position: absolute; top: 0; left: 0;" />
+    <canvas id="myCanvas" width="240" height="72" style="position: absolute; top: 0; left: 0; z-index: 1;">
+    </canvas>
+</div>
 
-    <div style="margin-top: 200px;">
-        <input type="text" id="textInput" placeholder="Enter text here..." value="Hello! How are you?">
-        <button id="updateButton">Update Text</button>
-    </div>
+<div style="margin-top: 200px;">
+    <input type="text" id="textInput" placeholder="Enter text here..." value="Hello! How are you?">
+    <button id="updateButton">Update Text</button>
 </div>
 
 <script>

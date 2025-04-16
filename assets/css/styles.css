@@ -68,6 +68,12 @@ body {
     transition: text-shadow 0.3s ease;
 }
 
+.hero-title a:hover,
+a:visited {
+    color: white;
+    text-decoration: none;
+}
+
 /* Dark mode toggle */
 .dark-mode-toggle {
     position: absolute;
