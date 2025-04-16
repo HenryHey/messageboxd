@@ -14,27 +14,8 @@ title: FF6
 </div>
 
 <script>
-    // Load character widths from widths.json
     let charWidths = {};
     let letterTiles = {};
-
-    function loadCharWidths(tiles) {
-        fetch('widths.json')
-            .then(response => response.json())
-            .then(data => {
-                charWidths = data;
-                console.log('Character widths loaded successfully');
-                for (const [ascii_code, width] of Object.entries(charWidths)) {
-                    console.log(ascii_code, String.fromCharCode(ascii_code), width);
-                }
-                for (const [ascii_code, width] of Object.entries(charWidths)) {
-                    letterTiles[String.fromCharCode(ascii_code)] = tiles[parseInt(ascii_code)];
-                }
-            })
-            .catch(error => {
-                console.error('Error loading character widths:', error);
-            });
-    }
 
     const canvas = document.getElementById("myCanvas");
     const ctx = canvas.getContext("2d");
@@ -44,9 +25,21 @@ title: FF6
     const tile_size = 13;
     const numberOfTiles = 96;
 
+    function loadCharWidths() {
+        fetch('widths.json')
+            .then(response => response.json())
+            .then(data => {
+                charWidths = data;
+                console.log('Character widths loaded successfully');
+            })
+            .catch(error => {
+                console.error('Error loading character widths:', error);
+            });
+    }
+
+
     // Wait for the image to load before processing
     imageEl.onload = function () {
-        // Calculate the number of tiles in the tileset
         const tiles = [];
 
         // Extract each tile from the tileset
@@ -75,19 +68,14 @@ title: FF6
 
         letterTiles = loadLetterTiles(tiles);
 
-        // Draw initial text
-        const initialText = document.getElementById("textInput").value;
-        drawText(initialText, 16, 16, letterTiles);
 
-        // Add event listener to the update button
-        document.getElementById("updateButton").addEventListener("click", updateText);
     };
 
     // Function to update text from input field
     function updateText() {
         const text = document.getElementById("textInput").value;
         // Clear the text area first
-        ctx.clearRect(0, 50, canvas.width, 100);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         // Draw the new text
         drawText(text, 8, 8, letterTiles);
     }
@@ -116,4 +104,8 @@ title: FF6
             console.log(cursorPos, text[i], charWidths[text.charCodeAt(i)]);
         }
     }
+
+
+    // Add event listener to the update button
+    document.getElementById("updateButton").addEventListener("click", updateText);
 </script>
