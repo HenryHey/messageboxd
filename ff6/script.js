@@ -1,118 +1,152 @@
-let charWidths = {};
-let letterTiles = {};
-let backgroundImage = new Image();
-let imagesLoaded = 0;
-let totalImages = 2;
+// Global state
+const state = {
+    charWidths: {},
+    letterTiles: {},
+    imagesLoaded: 0,
+    totalImages: 2, // Font + background
+    tileSize: 13,
+    numberOfTiles: 96,
+    lineSpacing: 16,
+    maxTextWidth: 208, // 240 - 32
+};
 
+// DOM elements
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
-const imageEl = new Image();
-imageEl.src = "variable_width_font.png";
+const textInput = document.getElementById("textInput");
+
+// Assets
+const fontImage = new Image();
+const backgroundImage = new Image();
+fontImage.src = "variable_width_font.png";
 backgroundImage.src = "background.png";
 
-const tile_size = 13;
-const numberOfTiles = 96;
-const line_spacing = 16;
-
-function loadCharWidths() {
-    fetch('widths.json')
-        .then(response => response.json())
-        .then(data => {
-            charWidths = data;
-            console.log('Character widths loaded successfully');
-        })
-        .catch(error => {
-            console.error('Error loading character widths:', error);
-        });
+// Initialize the application
+async function init() {
+    registerEventListeners();
+    await Promise.all([
+        loadImages(),
+        loadCharacterWidths()
+    ]);
+    console.log('Application initialized');
+    updateText();
 }
 
-function imageLoaded() {
-    imagesLoaded++;
-    if (imagesLoaded === totalImages) {
-        console.log('All images loaded successfully');
-        updateText();
+// Event listeners
+function registerEventListeners() {
+    document.getElementById("updateButton").addEventListener("click", updateText);
+    textInput.addEventListener("keyup", updateText);
+}
+
+// Image loading
+function loadImages() {
+    return new Promise(resolve => {
+        let imagesLoaded = 0;
+        const onImageLoad = () => {
+            imagesLoaded++;
+            if (imagesLoaded === state.totalImages) {
+                state.letterTiles = createLetterTiles();
+                resolve();
+            }
+        };
+
+        fontImage.onload = onImageLoad;
+        backgroundImage.onload = onImageLoad;
+    });
+}
+
+// Character width data loading
+async function loadCharacterWidths() {
+    try {
+        const response = await fetch('widths.json');
+        state.charWidths = await response.json();
+        console.log('Character widths loaded successfully');
+    } catch (error) {
+        console.error('Error loading character widths:', error);
     }
 }
 
-imageEl.onload = function () {
+// Create letter tile mappings from font image
+function createLetterTiles() {
     const tiles = [];
 
-    for (let i = 0; i < numberOfTiles; i++) {
+    // Extract each tile from the tileset
+    for (let i = 0; i < state.numberOfTiles; i++) {
         const tileCanvas = document.createElement('canvas');
-        tileCanvas.width = tile_size;
-        tileCanvas.height = tile_size;
+        tileCanvas.width = state.tileSize;
+        tileCanvas.height = state.tileSize;
         const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true, alpha: true });
 
-        tileCtx.clearRect(0, 0, tile_size, tile_size);
-
+        tileCtx.clearRect(0, 0, state.tileSize, state.tileSize);
         tileCtx.drawImage(
-            imageEl,
-            i * tile_size, 0, tile_size, tile_size,
-            0, 0, tile_size, tile_size
+            fontImage,
+            i * state.tileSize, 0, state.tileSize, state.tileSize,
+            0, 0, state.tileSize, state.tileSize
         );
 
         tiles.push(tileCanvas);
     }
 
     console.log(`Loaded ${tiles.length} tiles from tileset`);
-    loadCharWidths();
+    return mapLettersToTiles(tiles);
+}
 
-    letterTiles = loadLetterTiles(tiles);
-    imageLoaded();
-};
+function mapLettersToTiles(tiles) {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.,_;#+()%~*@π,,,,,,,,,,,,, ";
+    const letterTileMap = {};
 
-backgroundImage.onload = imageLoaded;
+    for (let i = 0; i < characters.length; i++) {
+        letterTileMap[characters[i]] = tiles[i];
+    }
 
+    return letterTileMap;
+}
+
+// Text rendering functions
 function updateText() {
-    const text = document.getElementById("textInput").value;
-    const amountOfLines = text.split("\n").length;
-    if (amountOfLines > 4) {
-        const lines = text.split("\n");
-        if (lines.length > 4) {
-            document.getElementById("textInput").value = lines.slice(0, 4).join("\n");
-            return;
-        }
+    const text = textInput.value;
+    const lines = text.split("\n");
+
+    // Limit to 4 lines
+    if (lines.length > 4) {
+        textInput.value = lines.slice(0, 4).join("\n");
+        return;
     }
+
+    // Render the text
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBackground("background.png");
-    drawText(text, 16, 8, letterTiles);
+    drawBackground();
+    drawText(textInput.value, 16, 8);
 }
 
-function drawTile(tile, x, y) {
-    ctx.drawImage(tile, x, y, tile_size, tile_size);
-}
-
-function loadLetterTiles(tiles) {
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.,_;#+()%~*@π,,,,,,,,,,,,, ";
-    const letter_tiles = {};
-    for (let i = 0; i < letters.length; i++) {
-        letter_tiles[letters[i]] = tiles[i];
-    }
-    return letter_tiles;
-}
-
-function drawBackground(filename) {
+function drawBackground() {
     ctx.drawImage(backgroundImage, 0, 0, 240, 72);
 }
 
-function drawText(text, x, y, letter_tiles) {
-    if (Object.keys(charWidths).length === 0) return;
+function drawText(text, x, y) {
+    if (Object.keys(state.charWidths).length === 0) return;
 
     const lines = text.split("\n").slice(0, 4);
 
-    let cursorPos = 0;
-    for (let i = 0; i < lines.length; i++) {
-        for (let j = 0; j < lines[i].length; j++) {
-            if (cursorPos < 240 - 32) {
-                drawTile(letter_tiles[lines[i][j]], x + cursorPos, y);
-                cursorPos += charWidths[lines[i][j].charCodeAt(0)];
+    lines.forEach((line, lineIndex) => {
+        let cursorPos = 0;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (cursorPos < state.maxTextWidth) {
+                drawTile(state.letterTiles[char], x + cursorPos, y);
+                cursorPos += state.charWidths[char.charCodeAt(0)];
             }
         }
-        cursorPos = 0;
-        y += line_spacing;
-    }
+
+        y += state.lineSpacing;
+    });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById("updateButton").addEventListener("click", updateText);
-}); 
+function drawTile(tile, x, y) {
+    if (!tile) return;
+    ctx.drawImage(tile, x, y, state.tileSize, state.tileSize);
+}
+
+// Initialize the application when the DOM is ready
+document.addEventListener("DOMContentLoaded", init); 
