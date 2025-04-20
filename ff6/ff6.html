@@ -3,109 +3,15 @@ layout: default
 title: FF6
 ---
 <div style="position: relative; margin: 0 auto; width: 240px;">
-    <img src="background.png" style="position: absolute; top: 0; left: 0;" />
+    <!-- <img src="background.png" style="position: absolute; top: 0; left: 0;" /> -->
     <canvas id="myCanvas" width="240" height="72" style="position: absolute; top: 0; left: 0; z-index: 1;">
     </canvas>
 </div>
 
-<div style="margin-top: 200px;">
-    <input type="text" id="textInput" placeholder="Enter text here..." value="Hello! How are you?">
+<div style="margin-top: 100px;">
+    <textarea onkeyup="updateText()" id="textInput" placeholder="Enter text here..." class="text-input">Shadow: Leave us.
+The dog eats strangers...</textarea>
     <button id="updateButton">Update Text</button>
 </div>
 
-<script>
-    let charWidths = {};
-    let letterTiles = {};
-
-    const canvas = document.getElementById("myCanvas");
-    const ctx = canvas.getContext("2d");
-    const imageEl = new Image();
-    imageEl.src = "variable_width_font.png";
-
-    const tile_size = 13;
-    const numberOfTiles = 96;
-
-    function loadCharWidths() {
-        fetch('widths.json')
-            .then(response => response.json())
-            .then(data => {
-                charWidths = data;
-                console.log('Character widths loaded successfully');
-            })
-            .catch(error => {
-                console.error('Error loading character widths:', error);
-            });
-    }
-
-
-    // Wait for the image to load before processing
-    imageEl.onload = function () {
-        const tiles = [];
-
-        // Extract each tile from the tileset
-        for (let i = 0; i < numberOfTiles; i++) {
-            // Create a temporary canvas for each tile
-            const tileCanvas = document.createElement('canvas');
-            tileCanvas.width = tile_size;
-            tileCanvas.height = tile_size;
-            const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true, alpha: true });
-
-            // Clear the tile canvas to ensure transparency
-            tileCtx.clearRect(0, 0, tile_size, tile_size);
-
-            // Draw the tile portion from the tileset to the temporary canvas
-            tileCtx.drawImage(
-                imageEl,
-                i * tile_size, 0, tile_size, tile_size,
-                0, 0, tile_size, tile_size
-            );
-
-            tiles.push(tileCanvas);
-        }
-
-        console.log(`Loaded ${tiles.length} tiles from tileset`);
-        loadCharWidths();
-
-        letterTiles = loadLetterTiles(tiles);
-
-
-    };
-
-    // Function to update text from input field
-    function updateText() {
-        const text = document.getElementById("textInput").value;
-        // Clear the text area first
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // Draw the new text
-        drawText(text, 8, 8, letterTiles);
-    }
-
-    function drawTile(tile, x, y) {
-        ctx.drawImage(tile, x, y, tile_size, tile_size);
-    }
-
-    function loadLetterTiles(tiles) {
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.,_;#+()%~*@π............. ";
-        const letter_tiles = {};
-        for (let i = 0; i < letters.length; i++) {
-            letter_tiles[letters[i]] = tiles[i];
-        }
-        return letter_tiles;
-    }
-
-    function drawText(text, x, y, letter_tiles) {
-        if (Object.keys(charWidths).length === 0) return;
-
-        let cursorPos = 0;
-        console.log("Cursor pos: ", cursorPos);
-        for (let i = 0; i < text.length; i++) {
-            drawTile(letter_tiles[text[i]], x + cursorPos, y);
-            cursorPos += charWidths[text.charCodeAt(i)];
-            console.log(cursorPos, text[i], charWidths[text.charCodeAt(i)]);
-        }
-    }
-
-
-    // Add event listener to the update button
-    document.getElementById("updateButton").addEventListener("click", updateText);
-</script>
+<script src="script.js"></script>
