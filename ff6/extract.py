@@ -84,15 +84,18 @@ def generate_fixed_width_font(data: bytes, palette: list[tuple[int, int, int, in
 
 
 def generate_widths(widths: list[int]) -> None:
-    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.,_;#+()%~*@π............. "
-    letters_dict = {str(ord(letters[i])): widths[0x20 + i] for i in range(len(letters))}
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.…_;#+()%~*@π=\""
+    letter_dict = { l: widths[0x20 + i] for i, l in enumerate(letters) }
+    special_chars = ["block", "block", "light", "cross", "lightning", "air", "next", "gem", "fire", "water", "poison", " "]
+    letter_dict.update({c: widths[0x20 + len(letters) + i] for i, c in enumerate(special_chars)})
 
-    for k, v in letters_dict.items():
-        print(chr(int(k)), k, v)
+
+    for k, v in letter_dict.items():
+        print(k, v)
 
     # print(letters_dict)
     with open("widths.json", "w") as f:
-        json.dump(letters_dict, f)
+        json.dump(letter_dict, f)
 
 
 # Load data from ROM file

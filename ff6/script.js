@@ -24,23 +24,56 @@ backgroundImage.src = "background.png";
 // Initialize the application
 async function init() {
     registerEventListeners();
-    await Promise.all([
-        loadImages(),
-        loadCharacterWidths()
-    ]);
+    await loadCharacterWidths();
+    await loadImages();
     console.log('Application initialized');
     updateText();
 }
 
 // Event listeners
 function registerEventListeners() {
-    document.getElementById("updateButton").addEventListener("click", updateText);
+    // document.getElementById("updateButton").addEventListener("click", updateText);
     textInput.addEventListener("keyup", updateText);
+
+    // Add event listeners for special character buttons
+    const specialCharButtons = document.querySelectorAll('.special-char-btn');
+    specialCharButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const char = this.getAttribute('data-char');
+            insertSpecialCharAtCursor(char);
+        });
+    });
+}
+
+// Insert special character at cursor position
+function insertSpecialCharAtCursor(char) {
+    const startPos = textInput.selectionStart;
+    const endPos = textInput.selectionEnd;
+    const text = textInput.value;
+    const specialChar = `<${char}>`;
+
+    // Insert the special character at cursor position
+    textInput.value = text.substring(0, startPos) + specialChar + text.substring(endPos);
+
+    // Move cursor position after the inserted special character
+    textInput.selectionStart = startPos + specialChar.length;
+    textInput.selectionEnd = startPos + specialChar.length;
+
+    // Focus back on textarea and update the text
+    textInput.focus();
+    updateText();
 }
 
 // Image loading
 function loadImages() {
     return new Promise(resolve => {
+        // Check if images are already loaded
+        if (fontImage.complete && backgroundImage.complete) {
+            state.letterTiles = createLetterTiles();
+            resolve();
+            return;
+        }
+
         let imagesLoaded = 0;
         const onImageLoad = () => {
             imagesLoaded++;
@@ -92,10 +125,18 @@ function createLetterTiles() {
 }
 
 function mapLettersToTiles(tiles) {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.,_;#+()%~*@π,,,,,,,,,,,,, ";
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?/:\"'-.…_;#+()%~*@π=\""
+    letter_array = letters.split("")
+    special_chars = ["block", "block", "light", "cross", "lightning", "air", "next", "gem", "fire", "water", "poison", " "]
+    letter_array.push(...special_chars)
+    const characters = letter_array;
     const letterTileMap = {};
 
     for (let i = 0; i < characters.length; i++) {
+
+        if (letterTileMap[characters[i]]) {
+            console.log(`Duplicate character found: ${characters[i]}`);
+        }
         letterTileMap[characters[i]] = tiles[i];
     }
 
@@ -132,10 +173,22 @@ function drawText(text, x, y) {
         let cursorPos = 0;
 
         for (let i = 0; i < line.length; i++) {
+            if (line[i] === "<") {
+                let special_char = "";
+                while (line[i] !== ">" && i < line.length) {
+                    special_char += line[i];
+                    i++;
+                }
+                // i++;
+                special_char = special_char.replace("<", "").replace(">", "");
+                drawTile(state.letterTiles[special_char], x + cursorPos, y);
+                cursorPos += state.charWidths[special_char];
+                continue;
+            }
             const char = line[i];
             if (cursorPos < state.maxTextWidth) {
                 drawTile(state.letterTiles[char], x + cursorPos, y);
-                cursorPos += state.charWidths[char.charCodeAt(0)];
+                cursorPos += state.charWidths[char];
             }
         }
 

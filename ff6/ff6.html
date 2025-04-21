@@ -2,16 +2,30 @@
 layout: default
 title: FF6
 ---
-<div style="position: relative; margin: 0 auto; width: 240px;">
-    <canvas id="myCanvas" width="240" height="72" style="position: absolute; top: 0; left: 0; z-index: 1;">
-    </canvas>
+
+<head>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<div class="canvas-container">
+    <canvas id="myCanvas" width="240" height="72"></canvas>
 </div>
 
-<div style="margin-top: 100px; display: flex; flex-direction: column; align-items: center; width: 100%;">
-    <textarea onkeyup="updateText()" id="textInput" placeholder="Enter text here..." class="text-input"
-        style="width: 300px; margin-bottom: 10px;">Shadow: Leave us.
+<div class="controls-container">
+    <textarea onkeyup="updateText()" id="textInput" placeholder="Enter text here..." class="text-input">Shadow: Leave us.
 The dog eats strangers...</textarea>
-    <button id="updateButton" style="width: 120px;">Update Text</button>
+    <!-- <button id="updateButton">Update Text</button> -->
+    <div class="special-chars-container">
+        <button class="special-char-btn" data-char="block">Block</button>
+        <button class="special-char-btn" data-char="light">Light</button>
+        <button class="special-char-btn" data-char="cross">Cross</button>
+        <button class="special-char-btn" data-char="lightning">Lightning</button>
+        <button class="special-char-btn" data-char="air">Air</button>
+        <button class="special-char-btn" data-char="next">Next</button>
+        <button class="special-char-btn" data-char="gem">Gem</button>
+        <button class="special-char-btn" data-char="fire">Fire</button>
+        <button class="special-char-btn" data-char="water">Water</button>
+        <button class="special-char-btn" data-char="poison">Poison</button>
+    </div>
 </div>
 
 <script src="script.js"></script>
