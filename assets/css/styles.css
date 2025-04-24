@@ -112,6 +112,7 @@ html.dark-mode .dark-mode-toggle .moon-icon {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    padding-bottom: 4rem;
 }
 
 /* Typography */
@@ -220,7 +221,7 @@ a:hover {
     max-width: 300px;
     height: 90px;
     padding: 10px;
-    border: 2px solid var(--accent-color);
+    border: 2px solid var(--primary-color);
     border-radius: 4px;
     background-color: var(--background-color);
     color: var(--primary-color);
@@ -233,6 +234,36 @@ a:hover {
 
 .text-input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 5px color-mix(in srgb, var(--accent-color) 50%, transparent);
+    border-color: var(--accent-color);
+}
+
+/* Footer styles */
+.site-footer {
+    background: var(--primary-color);
+    color: var(--accent-color);
+    padding: 0.5rem;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    height: 30px;
+}
+
+.site-footer a {
+    color: var(--background-color);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.site-footer a:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
 }
