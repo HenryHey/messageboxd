@@ -178,6 +178,20 @@ a:hover {
     text-decoration: none;
 }
 
+/* Button image styles */
+.button-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.button-image:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .hero-title {
