@@ -13,18 +13,18 @@ palette_golden_sun = [
     (255, 255, 255, 255),  # 1: White
     (12, 12, 12, 255),  # 2: Golden yellow
     (0, 0, 0, 255),  # 3: Black
-    (20, 76, 219, 255),  # 4: Blue
+    (20, 76, 219, 0),  # 4: Blue
     (0, 0, 0, 255),  # 5: Black
-    (101, 85, 5, 255),  # 6: Brown
-    (162, 146, 10, 255),  # 7: Dark gold
-    (195, 162, 0, 255),  # 8: Gold
-    (65, 105, 225, 255),  # 9: Royal blue
-    (30, 144, 255, 255),  # 10: Dodge blue
-    (182, 182, 182, 255),  # 11: Light gray
-    (40, 40, 40, 255),  # 12: Dark gray
-    (100, 100, 100, 255),  # 13: Medium gray
-    (220, 220, 220, 255),  # 14: Very light gray
-    (200, 150, 0, 255),  # 15: Dark yellow
+    (255, 0, 255, 255),  # 6: Fuchsia
+    (255, 0, 255, 255),  # 7: Fuchsia
+    (255, 0, 255, 255),  # 8: Fuchsia
+    (255, 0, 255, 255),  # 9: Fuchsia
+    (255, 0, 255, 255),  # 10: Fuchsia
+    (255, 0, 255, 255),  # 11: Fuchsia
+    (255, 0, 255, 255),  # 12: Fuchsia
+    (255, 0, 255, 255),  # 13: Fuchsia
+    (255, 0, 255, 255),  # 14: Fuchsia
+    (255, 0, 255, 255),  # 15: Fuchsia
 ]
 
 # Set the active palette - change this to select which palette to use
@@ -113,18 +113,22 @@ def generate_variable_width_font(data: bytes, output_file: str = "variable_width
 
 
 def generate_widths() -> None:
-    letters = "!\"#%&'()+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[¥]^_±abcdefghijklmnopqrstuvwxyz{|}~"
+    letters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[¥]^_±abcdefghijklmnopqrstuvwxyz{|}~"
     letter_dict = {l: 8 for i, l in enumerate(letters)}
     special_chars = [
         "block",
         "a_button",
+        " ",
         "b_button",
+        " ",
         "l_button_1",
         "l_button_2",
         "r_button_1",
         "r_button_2",
-        "start_button",
-        "select_button",
+        "start_button_1",
+        "start_button_2",
+        "select_button_1",
+        "select_button_2",
         " ",
     ]
     letter_dict.update({c: 8 for i, c in enumerate(special_chars)})
