@@ -1,0 +1,31 @@
+---
+layout: default
+title: Golden Sun
+---
+
+<head>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<div class="canvas-container">
+    <canvas id="myCanvas" width="240" height="72"></canvas>
+</div>
+
+<div class="controls-container">
+    <textarea onkeyup="updateText()" id="textInput" placeholder="Enter text here..." class="text-input">Isaac: The boulder... 
+It destroyed everything...</textarea>
+    <div class="special-chars-container">
+        <button class="special-char-btn" data-char="block">Block</button>
+        <button class="special-char-btn" data-char="a_button">A Button</button>
+        <button class="special-char-btn" data-char="b_button">B Button</button>
+        <button class="special-char-btn" data-char="l_button_1">L Button 1</button>
+        <button class="special-char-btn" data-char="l_button_2">L Button 2</button>
+        <button class="special-char-btn" data-char="r_button_1">R Button 1</button>
+        <button class="special-char-btn" data-char="r_button_2">R Button 2</button>
+        <button class="special-char-btn" data-char="start_button_1">Start Button 1</button>
+        <button class="special-char-btn" data-char="start_button_2">Start Button 2</button>
+        <button class="special-char-btn" data-char="select_button_1">Select Button 1</button>
+        <button class="special-char-btn" data-char="select_button_2">Select Button 2</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
