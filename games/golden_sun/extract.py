@@ -1,11 +1,21 @@
 import json
+import os
 from PIL import Image
 import numpy as np
 
 rom_file = "golden_sun.gba"
 
+# Check if ROM file exists
+if not os.path.exists(rom_file):
+    print(f"Error: ROM file '{rom_file}' not found.")
+    print("Please place the Golden Sun ROM file in the current directory and rename it to 'golden_sun.gba'")
+    exit(1)
+
 variable_width_tiles = 112
 tile_bytes = 32
+italic_tiles = 64
+italic_tile_bytes = 32  # 1(bpp) x 16(width) x 16(height) / 8(bits per byte)
+
 
 # Golden Sun specific text colors
 palette_golden_sun = [
@@ -27,23 +37,22 @@ palette_golden_sun = [
     (255, 0, 255, 255),  # 15: Fuchsia
 ]
 
-# Set the active palette - change this to select which palette to use
 active_palette = palette_golden_sun
 
 
-# def load_data(rom_file: str) -> tuple[bytes, list[int], bytes]:
-def load_data(rom_file: str, offset: int = 0) -> bytes:
+def load_data(rom_file: str, offset: int = 0) -> tuple[bytes, bytes]:
     with open(rom_file, "rb") as f:
 
-        # Read character widths
-        # f.seek(0x0032128C + offset)
-        # widths = [x for x in f.read(256)]
+        # Read italic font
+        # f.seek(0x02C7C0 + offset)
+        f.seek(0x032224 + offset)
+        italic_font_data = f.read(italic_tile_bytes * italic_tiles)
 
         # Read character data
         f.seek(0x003213D0 + offset)
         variable_width_font_data = f.read(tile_bytes * variable_width_tiles)
 
-    return variable_width_font_data
+    return variable_width_font_data, italic_font_data
 
 
 def convert_4bpp_to_rgba(data, tile_size=8):
@@ -112,6 +121,44 @@ def generate_variable_width_font(data: bytes, output_file: str = "variable_width
     out.save(output_file)
 
 
+def swap_bytes(data):
+    swapped_data = bytearray(data)
+    for j in range(0, len(swapped_data), 2):
+        if j + 1 < len(swapped_data):
+            swapped_data[j], swapped_data[j + 1] = swapped_data[j + 1], swapped_data[j]
+    return bytes(swapped_data)
+
+
+def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> None:
+    grid_width = 16
+    grid_height = italic_tiles // grid_width
+    tile_width_info_offset = 0x20
+    char_width = 16
+    char_height = 16
+    out = Image.new("RGBA", (grid_width * char_width, grid_height * char_height), (0, 0, 0, 0))
+
+    for i in range(italic_tiles):
+        width = data[i * italic_tile_bytes : i * italic_tile_bytes + 2]
+        char_data = data[i * italic_tile_bytes + 2 : (i * italic_tile_bytes + 2 + 28)]
+        padding = data[i * italic_tile_bytes + 2 + 28 : (i * italic_tile_bytes + 2 + 28 + 2)]
+
+        final_data = width + swap_bytes(char_data) + padding
+
+        glyph = Image.frombytes("1", (char_width, char_height), final_data)
+
+        x = i % grid_width * char_width
+        y = i // grid_width * char_height
+
+        # Create the shadow (black) with 1px offset
+        out.paste((0, 0, 0, 255), (x + 1, y + 1), glyph)
+
+        # Create the main character (white)
+        out.paste((255, 255, 255, 255), (x, y), glyph)
+
+    # Save the output image
+    out.save(output_file)
+
+
 def generate_widths() -> None:
     letters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[¥]^_±abcdefghijklmnopqrstuvwxyz{|}~"
     letter_dict = {l: 8 for i, l in enumerate(letters)}
@@ -140,8 +187,10 @@ def generate_widths() -> None:
 
 # Load data from ROM file
 i = 0
-variable_width_font_data = load_data(rom_file, i)
+variable_width_font_data, italic_font_data = load_data(rom_file, i)
 print(f"Number of variable width font tiles: {len(variable_width_font_data) // tile_bytes }")
+print(f"Number of italic font tiles: {len(italic_font_data)}")
 
-generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
-generate_widths()
+# generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
+generate_italic_font(italic_font_data)
+# generate_widths()
