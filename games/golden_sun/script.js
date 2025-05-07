@@ -1,5 +1,7 @@
 // Global state
 const state = {
+    canvasWidth: 160,
+    canvasHeight: 56,
     charWidths: {},
     letterTiles: {},
     imagesLoaded: 0,
@@ -170,11 +172,11 @@ function updateText() {
     // Render the text
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
-    drawText(textInput.value, 16, 8);
+    drawText(textInput.value, 6, 8);
 }
 
 function drawBackground() {
-    ctx.drawImage(backgroundImage, 0, 0, 240, 72);
+    ctx.drawImage(backgroundImage, 0, 0, state.canvasWidth, state.canvasHeight);
 }
 
 function drawText(text, x, y) {
