@@ -7,8 +7,14 @@
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://messageboxd.com/games/ff6/ff6.html</loc>
+        <loc>https://messageboxd.com/games/ff6/</loc>
         <lastmod>2024-05-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://messageboxd.com/games/golden-sun/</loc>
+        <lastmod>2024-05-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
