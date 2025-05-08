@@ -13,7 +13,7 @@ if not os.path.exists(rom_file):
 
 variable_width_tiles = 112
 tile_bytes = 32
-italic_tiles = 64
+italic_tiles = 224
 italic_tile_bytes = 32  # 1(bpp) x 16(width) x 16(height) / 8(bits per byte)
 
 
@@ -44,7 +44,6 @@ def load_data(rom_file: str, offset: int = 0) -> tuple[bytes, bytes]:
     with open(rom_file, "rb") as f:
 
         # Read italic font
-        # f.seek(0x02C7C0 + offset)
         f.seek(0x032224 + offset)
         italic_font_data = f.read(italic_tile_bytes * italic_tiles)
 
@@ -130,19 +129,51 @@ def swap_bytes(data):
 
 
 def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> None:
-    grid_width = 16
+    special_chars = [
+        "a_1",
+        "a_2",
+        "b_1",
+        "b_2",
+        "l_1",
+        "l_2",
+        "r_1",
+        "r_2",
+        "st_1",
+        "st_2",
+        "sel_1",
+        "sel_2",
+        " ",
+        " ",
+        "“",
+        "—",
+    ]
+    letters = (
+        list(" !”#$%&'()*+,-./0123456789:;<=>?")
+        + list("@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_")
+        + list("'abcdefghijklmnopqrstuvwxyz{|}~ ")
+        + special_chars
+        + [" "] * 16
+        + list(" ¡¢£ ¥ §¨©ª«¬ ®¯°±  ´µ¶·¸¹º»   ¿")
+        + list("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ ÑÒÓÔÕÖ ØÙÚÛÜ  ß")
+        + list("àáâãäåæçèéêëìíîï ñòóôõö÷øùúûü  ÿ")
+    )
+    italic_widths = {}
+
+    grid_width = 224
     grid_height = italic_tiles // grid_width
-    tile_width_info_offset = 0x20
     char_width = 16
-    char_height = 16
+    char_height = 14
     out = Image.new("RGBA", (grid_width * char_width, grid_height * char_height), (0, 0, 0, 0))
 
+    print(letters)
+    print(len(letters), italic_tiles)
+    assert len(letters) == italic_tiles
     for i in range(italic_tiles):
         width = data[i * italic_tile_bytes : i * italic_tile_bytes + 2]
         char_data = data[i * italic_tile_bytes + 2 : (i * italic_tile_bytes + 2 + 28)]
-        padding = data[i * italic_tile_bytes + 2 + 28 : (i * italic_tile_bytes + 2 + 28 + 2)]
+        italic_widths[letters[i]] = int.from_bytes(swap_bytes(width), "big")
 
-        final_data = width + swap_bytes(char_data) + padding
+        final_data = swap_bytes(char_data)
 
         glyph = Image.frombytes("1", (char_width, char_height), final_data)
 
@@ -157,6 +188,9 @@ def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> N
 
     # Save the output image
     out.save(output_file)
+    italic_widths[" "] = 8
+    with open("italic_widths.json", "w") as f:
+        json.dump(italic_widths, f)
 
 
 def generate_widths() -> None:
@@ -188,8 +222,6 @@ def generate_widths() -> None:
 # Load data from ROM file
 i = 0
 variable_width_font_data, italic_font_data = load_data(rom_file, i)
-print(f"Number of variable width font tiles: {len(variable_width_font_data) // tile_bytes }")
-print(f"Number of italic font tiles: {len(italic_font_data)}")
 
 # generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
 generate_italic_font(italic_font_data)

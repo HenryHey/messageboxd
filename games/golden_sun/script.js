@@ -6,8 +6,10 @@ const state = {
     letterTiles: {},
     imagesLoaded: 0,
     totalImages: 2, // Font + background
-    tileSize: 8,
-    numberOfTiles: 112,
+    tileWidth: 16,
+    tileHeight: 14,
+    // numberOfTiles: 112,
+    numberOfTiles: 224,
     lineSpacing: 14,
     maxTextWidth: 208, // 240 - 32
 };
@@ -20,13 +22,14 @@ const textInput = document.getElementById("textInput");
 // Assets
 const fontImage = new Image();
 const backgroundImage = new Image();
-fontImage.src = "variable_width_font_0.png";
+// fontImage.src = "variable_width_font_0.png";
+fontImage.src = "italic_font.png";
 backgroundImage.src = "background.png";
 
 // Initialize the application
 async function init() {
     registerEventListeners();
-    await loadCharacterWidths();
+    await loadCharacterWidths("italic_widths.json");
     await loadImages();
     console.log('Application initialized');
     updateText();
@@ -90,9 +93,9 @@ function loadImages() {
 }
 
 // Character width data loading
-async function loadCharacterWidths() {
+async function loadCharacterWidths(widthsFile = "widths.json") {
     try {
-        const response = await fetch('widths.json');
+        const response = await fetch(widthsFile);
         state.charWidths = await response.json();
         console.log('Character widths loaded successfully');
     } catch (error) {
@@ -107,22 +110,73 @@ function createLetterTiles() {
     // Extract each tile from the tileset
     for (let i = 0; i < state.numberOfTiles; i++) {
         const tileCanvas = document.createElement('canvas');
-        tileCanvas.width = state.tileSize;
-        tileCanvas.height = state.tileSize;
+        tileCanvas.width = state.tileWidth;
+        tileCanvas.height = state.tileHeight;
         const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true, alpha: true });
 
-        tileCtx.clearRect(0, 0, state.tileSize, state.tileSize);
+        tileCtx.clearRect(0, 0, state.tileWidth, state.tileHeight);
         tileCtx.drawImage(
             fontImage,
-            i * state.tileSize, 0, state.tileSize, state.tileSize,
-            0, 0, state.tileSize, state.tileSize
+            i * state.tileWidth, 0, state.tileWidth, state.tileHeight,
+            0, 0, state.tileWidth, state.tileHeight
         );
 
         tiles.push(tileCanvas);
     }
 
     console.log(`Loaded ${tiles.length} tiles from tileset`);
-    return mapLettersToTiles(tiles);
+    return mapItalicLettersToTiles(tiles);
+}
+
+function mapItalicLettersToTiles(tiles) {
+    const special_chars = [
+        "a_1",
+        "a_2",
+        "b_1",
+        "b_2",
+        "l_1",
+        "l_2",
+        "r_1",
+        "r_2",
+        "st_1",
+        "st_2",
+        "sel_1",
+        "sel_2",
+        " ",
+        " ",
+        "“",
+        "—",
+    ]
+    let letter_array =
+        " !”#$%&'()*+,-./0123456789:;<=>?"
+        + "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+        + "'abcdefghijklmnopqrstuvwxyz{|}~ "
+        + Array(16).fill(" ").join("")
+        + " ¡¢£ ¥ §¨©ª«¬ ®¯°±  ´µ¶·¸¹º»   ¿"
+        + "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ ÑÒÓÔÕÖ ØÙÚÛÜ  ß"
+        + "àáâãäåæçèéêëìíîï ñòóôõö÷øùúûü  ÿ";
+
+    letter_array = letter_array.split("");
+    letter_array = [
+        ...letter_array.slice(0, 32 * 3),
+        ...special_chars,
+        ...letter_array.slice(32 * 3 + special_chars.length, letter_array.length)
+    ]
+
+
+
+    const letterTileMap = {};
+    const characters = letter_array;
+
+    for (let i = 0; i < characters.length && i < tiles.length; i++) {
+        if (letterTileMap[characters[i]]) {
+            console.log(`Duplicate character found: ${characters[i]}`);
+        }
+        letterTileMap[characters[i]] = tiles[i];
+    }
+
+    letterTileMap[" "] = tiles[0];
+    return letterTileMap;
 }
 
 function mapLettersToTiles(tiles) {
@@ -217,7 +271,7 @@ function drawText(text, x, y) {
 
 function drawTile(tile, x, y) {
     if (!tile) return;
-    ctx.drawImage(tile, x, y, state.tileSize, state.tileSize);
+    ctx.drawImage(tile, x, y, state.tileWidth, state.tileHeight);
 }
 
 // Initialize the application when the DOM is ready
