@@ -12,3 +12,5 @@ Gemfile.lock
 
 .DS_Store
 .venv
+
+launch.json
