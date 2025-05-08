@@ -12,6 +12,20 @@ const state = {
     numberOfTiles: 224,
     lineSpacing: 14,
     maxTextWidth: 208, // 240 - 32
+    specialChars: [
+        "a_1",
+        "a_2",
+        "b_1",
+        "b_2",
+        "l_1",
+        "l_2",
+        "r_1",
+        "r_2",
+        "st_1",
+        "st_2",
+        "sel_1",
+        "sel_2"
+    ]
 };
 
 // DOM elements
@@ -29,6 +43,7 @@ backgroundImage.src = "background.png";
 // Initialize the application
 async function init() {
     registerEventListeners();
+    generateSpecialCharButtons();
     await loadCharacterWidths("italic_widths.json");
     await loadImages();
     console.log('Application initialized');
@@ -38,14 +53,42 @@ async function init() {
 // Event listeners
 function registerEventListeners() {
     textInput.addEventListener("keyup", updateText);
+}
 
-    // Add event listeners for special character buttons
-    const specialCharButtons = document.querySelectorAll('.special-char-btn');
-    specialCharButtons.forEach(button => {
+// Generate special character buttons dynamically
+function generateSpecialCharButtons() {
+    const specialCharsContainer = document.querySelector('.special-chars-container');
+    specialCharsContainer.innerHTML = ''; // Clear existing buttons
+
+    // Display name mapping
+    const displayNames = {
+        "a_1": "A Left",
+        "a_2": "A Right",
+        "b_1": "B Left",
+        "b_2": "B Right",
+        "l_1": "L Left",
+        "l_2": "L Right",
+        "r_1": "R Left",
+        "r_2": "R Right",
+        "st_1": "Start Left",
+        "st_2": "Start Right",
+        "sel_1": "Select Left",
+        "sel_2": "Select Right"
+    };
+
+    state.specialChars.forEach(char => {
+        const button = document.createElement('button');
+        button.className = 'special-char-btn';
+        button.setAttribute('data-char', char);
+
+        // Use display name mapping or generate from character code
+        button.textContent = displayNames[char] || char.replace('_', ' ').replace(/^\w|\s\w/g, c => c.toUpperCase());
+
         button.addEventListener('click', function () {
-            const char = this.getAttribute('data-char');
             insertSpecialCharAtCursor(char);
         });
+
+        specialCharsContainer.appendChild(button);
     });
 }
 
@@ -129,41 +172,27 @@ function createLetterTiles() {
 }
 
 function mapItalicLettersToTiles(tiles) {
-    const special_chars = [
-        "a_1",
-        "a_2",
-        "b_1",
-        "b_2",
-        "l_1",
-        "l_2",
-        "r_1",
-        "r_2",
-        "st_1",
-        "st_2",
-        "sel_1",
-        "sel_2",
+    const special_chars = state.specialChars.concat([
         " ",
         " ",
         "“",
         "—",
-    ]
+    ]);
     let letter_array =
-        " !”#$%&'()*+,-./0123456789:;<=>?"
-        + "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-        + "'abcdefghijklmnopqrstuvwxyz{|}~ "
-        + Array(16).fill(" ").join("")
-        + " ¡¢£ ¥ §¨©ª«¬ ®¯°±  ´µ¶·¸¹º»   ¿"
-        + "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ ÑÒÓÔÕÖ ØÙÚÛÜ  ß"
-        + "àáâãäåæçèéêëìíîï ñòóôõö÷øùúûü  ÿ";
+        " !\"#$%&'()*+,-./0123456789:;<=>?" +
+        "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
+        "'abcdefghijklmnopqrstuvwxyz{|}~ " +
+        Array(16).fill(" ").join("") +
+        " ¡¢£ ¥ §¨©ª«¬ ®¯°±  ´µ¶·¸¹º»   ¿" +
+        "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ ÑÒÓÔÕÖ ØÙÚÛÜ  ß" +
+        "àáâãäåæçèéêëìíîï ñòóôõö÷øùúûü  ÿ";
 
     letter_array = letter_array.split("");
     letter_array = [
         ...letter_array.slice(0, 32 * 3),
         ...special_chars,
         ...letter_array.slice(32 * 3 + special_chars.length, letter_array.length)
-    ]
-
-
+    ];
 
     const letterTileMap = {};
     const characters = letter_array;
