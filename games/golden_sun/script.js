@@ -5,54 +5,79 @@ const state = {
     charWidths: {},
     letterTiles: {},
     imagesLoaded: 0,
-    totalImages: 2, // Font + background
-    tileWidth: 16,
-    tileHeight: 14,
-    // numberOfTiles: 112,
-    numberOfTiles: 224,
+    totalImages: 3, // Font italic + variable width + background
+    tileWidth: 16, // Will be updated from config
+    tileHeight: 14, // Will be updated from config
+    numberOfTiles: 224, // Will be updated from config
     lineSpacing: 14,
     maxTextWidth: 208, // 240 - 32
-    specialChars: [
-        "a_1",
-        "a_2",
-        "b_1",
-        "b_2",
-        "l_1",
-        "l_2",
-        "r_1",
-        "r_2",
-        "st_1",
-        "st_2",
-        "sel_1",
-        "sel_2"
-    ]
+    currentFont: 'variable_width', // Default font
+    fontConfig: {}, // Store the full font config
+    specialChars: {} // Will be populated from config
 };
 
 // DOM elements
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 const textInput = document.getElementById("textInput");
+const toggleFontBtn = document.getElementById("toggleFont");
 
 // Assets
-const fontImage = new Image();
+const italicFontImage = new Image();
+const variableWidthFontImage = new Image();
 const backgroundImage = new Image();
-// fontImage.src = "variable_width_font_0.png";
-fontImage.src = "italic_font.png";
+italicFontImage.src = "italic_font.png";
+variableWidthFontImage.src = "variable_width_font_0.png";
 backgroundImage.src = "background.png";
 
 // Initialize the application
 async function init() {
     registerEventListeners();
+
+    // Load default font config first (italic)
+    await loadFontConfig();
+
+    // Then load the other font config to have both fonts' special characters available
+    const currentFont = state.currentFont;
+    state.currentFont = currentFont === 'italic' ? 'variable_width' : 'italic';
+    await loadFontConfig();
+    state.currentFont = currentFont; // Switch back to original font
+
+    // Generate buttons after both configs are loaded
     generateSpecialCharButtons();
-    await loadCharacterWidths("italic_widths.json");
+
     await loadImages();
     console.log('Application initialized');
+    toggleFont();
     updateText();
 }
 
-// Event listeners
 function registerEventListeners() {
     textInput.addEventListener("keyup", updateText);
+    toggleFontBtn.addEventListener("click", toggleFont);
+}
+
+// Toggle between fonts
+function toggleFont() {
+    state.currentFont = state.currentFont === 'italic' ? 'variable_width' : 'italic';
+
+    // Update button text
+    toggleFontBtn.textContent = state.currentFont === 'italic'
+        ? 'Switch to Variable Width Font'
+        : 'Switch to Italic Font';
+
+    // Reload the font config and regenerate special character buttons
+    loadFontConfig()
+        .then(() => {
+            state.letterTiles = createLetterTiles();
+            generateSpecialCharButtons();
+            updateText();
+        });
+}
+
+// Get correct config file based on current font
+function getConfigFile() {
+    return state.currentFont === 'italic' ? "config_italic.json" : "config.json";
 }
 
 // Generate special character buttons dynamically
@@ -60,8 +85,15 @@ function generateSpecialCharButtons() {
     const specialCharsContainer = document.querySelector('.special-chars-container');
     specialCharsContainer.innerHTML = ''; // Clear existing buttons
 
+    // Make sure specialChars are loaded for current font
+    if (!state.specialChars[state.currentFont]) {
+        console.warn(`Special characters not loaded for ${state.currentFont}`);
+        return;
+    }
+
     // Display name mapping
     const displayNames = {
+        // Italic font buttons
         "a_1": "A Left",
         "a_2": "A Right",
         "b_1": "B Left",
@@ -73,10 +105,27 @@ function generateSpecialCharButtons() {
         "st_1": "Start Left",
         "st_2": "Start Right",
         "sel_1": "Select Left",
-        "sel_2": "Select Right"
+        "sel_2": "Select Right",
+        // Variable width font buttons
+        "block": "Block",
+        "a_button": "A Button",
+        "b_button": "B Button",
+        "l_button_1": "L Button 1",
+        "l_button_2": "L Button 2",
+        "r_button_1": "R Button 1",
+        "r_button_2": "R Button 2",
+        "start_button_1": "Start 1",
+        "start_button_2": "Start 2",
+        "select_button_1": "Select 1",
+        "select_button_2": "Select 2"
     };
 
-    state.specialChars.forEach(char => {
+    // Get the correct special characters for the current font
+    const currentSpecialChars = state.specialChars[state.currentFont];
+
+    currentSpecialChars.forEach(char => {
+        if (char === " ") return; // Skip empty space placeholders
+
         const button = document.createElement('button');
         button.className = 'special-char-btn';
         button.setAttribute('data-char', char);
@@ -114,6 +163,8 @@ function insertSpecialCharAtCursor(char) {
 // Image loading
 function loadImages() {
     return new Promise(resolve => {
+        const fontImage = state.currentFont === 'italic' ? italicFontImage : variableWidthFontImage;
+
         // Check if images are already loaded
         if (fontImage.complete && backgroundImage.complete) {
             state.letterTiles = createLetterTiles();
@@ -122,9 +173,11 @@ function loadImages() {
         }
 
         let imagesLoaded = 0;
+        const imagesToLoad = 2; // Current font + background
+
         const onImageLoad = () => {
             imagesLoaded++;
-            if (imagesLoaded === state.totalImages) {
+            if (imagesLoaded === imagesToLoad) {
                 state.letterTiles = createLetterTiles();
                 resolve();
             }
@@ -146,9 +199,42 @@ async function loadCharacterWidths(widthsFile = "widths.json") {
     }
 }
 
+// Load font configuration
+async function loadFontConfig() {
+    try {
+        const configFile = getConfigFile();
+        const response = await fetch(configFile);
+        state.fontConfig = await response.json();
+
+        // Update tile dimensions from config
+        state.tileWidth = state.fontConfig.tile_width;
+        state.tileHeight = state.fontConfig.tile_height;
+        state.numberOfTiles = state.fontConfig.number_of_tiles;
+        state.charWidths = state.fontConfig.widths;
+
+        // Load special characters from config
+        if (state.fontConfig.special_chars) {
+            // Initialize the specialChars object if it doesn't exist
+            if (!state.specialChars[state.currentFont]) {
+                state.specialChars[state.currentFont] = [];
+            }
+
+            // Update the special characters for the current font
+            state.specialChars[state.currentFont] = state.fontConfig.special_chars;
+        }
+
+        console.log(`Font config loaded: ${state.tileWidth}x${state.tileHeight}, ${state.numberOfTiles} tiles`);
+    } catch (error) {
+        console.error('Error loading font config:', error);
+        // Fallback to separate widths file
+        await loadCharacterWidths(getWidthsFile());
+    }
+}
+
 // Create letter tile mappings from font image
 function createLetterTiles() {
     const tiles = [];
+    const fontImage = state.currentFont === 'italic' ? italicFontImage : variableWidthFontImage;
 
     // Extract each tile from the tileset
     for (let i = 0; i < state.numberOfTiles; i++) {
@@ -168,15 +254,21 @@ function createLetterTiles() {
     }
 
     console.log(`Loaded ${tiles.length} tiles from tileset`);
-    return mapItalicLettersToTiles(tiles);
+    return state.currentFont === 'italic' ? mapItalicLettersToTiles(tiles) : mapLettersToTiles(tiles);
 }
 
 function mapItalicLettersToTiles(tiles) {
-    const special_chars = state.specialChars.concat([
+    // Make sure special characters are loaded
+    if (!state.specialChars.italic) {
+        console.error("Special characters for italic font not loaded");
+        return {};
+    }
+
+    const special_chars = state.specialChars.italic.concat([
         " ",
         " ",
-        "“",
-        "—",
+        "\u201D", // Double quote
+        "\u2014"  // Em dash
     ]);
     let letter_array =
         " !\"#$%&'()*+,-./0123456789:;<=>?" +
@@ -209,25 +301,15 @@ function mapItalicLettersToTiles(tiles) {
 }
 
 function mapLettersToTiles(tiles) {
+    // Make sure special characters are loaded
+    if (!state.specialChars.variable_width) {
+        console.error("Special characters for variable width font not loaded");
+        return {};
+    }
+
     const letters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[¥]^_±abcdefghijklmnopqrstuvwxyz{|}~";
     const letter_array = letters.split("");
-    const special_chars = [
-        "block",
-        "a_button",
-        " ",
-        "b_button",
-        " ",
-        "l_button_1",
-        "l_button_2",
-        "r_button_1",
-        "r_button_2",
-        "start_button_1",
-        "start_button_2",
-        "select_button_1",
-        "select_button_2",
-        " "
-    ];
-    letter_array.push(...special_chars);
+    letter_array.push(...state.specialChars.variable_width);
     const characters = letter_array;
     const letterTileMap = {};
 
@@ -238,6 +320,7 @@ function mapLettersToTiles(tiles) {
         letterTileMap[characters[i]] = tiles[i];
     }
 
+    letterTileMap[" "] = letterTileMap[" "] || tiles[0]; // Fallback for space
     return letterTileMap;
 }
 

@@ -1,0 +1,32 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Rules
+
+## Code Standards
+- Use consistent indentation (2 spaces)
+- Follow semantic HTML practices
+- Use descriptive variable and function names
+- Write comments for complex logic
+- Keep functions small and focused
+
+## File Organization
+- Group related files in appropriate directories
+- Use lowercase filenames with hyphens for spaces
+- Keep directory structure flat when possible
+- Organize CSS with component-specific files
+
+## Performance
+- Optimize images before committing
+- Minimize third-party dependencies
+- Implement lazy loading where appropriate
+- Use efficient DOM manipulation techniques
+
+## Accessibility
+- Ensure proper keyboard navigation
+- Use semantic HTML elements
+- Include alt text for images
+- Maintain sufficient color contrast
+- Test with screen readers
