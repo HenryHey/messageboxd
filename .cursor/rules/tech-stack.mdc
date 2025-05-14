@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Tech Stack
+
+This project utilizes the following technologies:
+
+- **Static Site Generator:** Jekyll
+- **Deployment:** GitHub Actions
+- **Hosting:** GitHub Pages
+- **Public URL:** https://messageboxd.com

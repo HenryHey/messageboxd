@@ -48,6 +48,7 @@ async function init() {
 
     await loadImages();
     console.log('Application initialized');
+    toggleFont();
     updateText();
 }
 
