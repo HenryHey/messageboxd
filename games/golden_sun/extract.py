@@ -128,30 +128,19 @@ def swap_bytes(data):
     return bytes(swapped_data)
 
 
+def save_config(data: dict, output_file: str = "config.json") -> None:
+    with open(output_file, "w") as f:
+        json.dump(data, f)
+
+
 def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> None:
-    special_chars = [
-        "a_1",
-        "a_2",
-        "b_1",
-        "b_2",
-        "l_1",
-        "l_2",
-        "r_1",
-        "r_2",
-        "st_1",
-        "st_2",
-        "sel_1",
-        "sel_2",
-        " ",
-        " ",
-        "“",
-        "—",
-    ]
+    special_chars = ["a_1", "a_2", "b_1", "b_2", "l_1", "l_2", "r_1", "r_2", "st_1", "st_2", "sel_1", "sel_2"]
     letters = (
         list(" !”#$%&'()*+,-./0123456789:;<=>?")
         + list("@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_")
         + list("'abcdefghijklmnopqrstuvwxyz{|}~ ")
         + special_chars
+        + list("  “—")
         + [" "] * 16
         + list(" ¡¢£ ¥ §¨©ª«¬ ®¯°±  ´µ¶·¸¹º»   ¿")
         + list("ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ ÑÒÓÔÕÖ ØÙÚÛÜ  ß")
@@ -165,8 +154,6 @@ def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> N
     char_height = 14
     out = Image.new("RGBA", (grid_width * char_width, grid_height * char_height), (0, 0, 0, 0))
 
-    print(letters)
-    print(len(letters), italic_tiles)
     assert len(letters) == italic_tiles
     for i in range(italic_tiles):
         width = data[i * italic_tile_bytes : i * italic_tile_bytes + 2]
@@ -188,9 +175,17 @@ def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> N
 
     # Save the output image
     out.save(output_file)
+
+    # Save the config
     italic_widths[" "] = 8
-    with open("italic_widths.json", "w") as f:
-        json.dump(italic_widths, f)
+    config = {
+        "widths": italic_widths,
+        "special_chars": special_chars,
+        "tile_width": char_width,
+        "tile_height": char_height,
+        "number_of_tiles": italic_tiles,
+    }
+    save_config(config, "config_italic.json")
 
 
 def generate_widths() -> None:
@@ -215,14 +210,20 @@ def generate_widths() -> None:
     letter_dict.update({c: 8 for i, c in enumerate(special_chars)})
 
     print(letter_dict)
-    with open("widths.json", "w") as f:
-        json.dump(letter_dict, f)
+    config = {
+        "widths": letter_dict,
+        "special_chars": special_chars,
+        "tile_width": 8,
+        "tile_height": 8,
+        "number_of_tiles": len(letter_dict.keys()),
+    }
+    save_config(config, "config.json")
 
 
 # Load data from ROM file
 i = 0
 variable_width_font_data, italic_font_data = load_data(rom_file, i)
 
-# generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
 generate_italic_font(italic_font_data)
-# generate_widths()
+generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
+generate_widths()

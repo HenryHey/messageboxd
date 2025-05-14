@@ -12,6 +12,28 @@
     background-color: #e0e0e0;
 }
 
+.toggle-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    margin-bottom: 12px;
+}
+
+.toggle-btn:hover {
+    background-color: #3a80d2;
+}
+
+.font-toggle-container {
+    margin-bottom: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
 #updateButton {
     width: 120px;
 }
