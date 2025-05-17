@@ -11,7 +11,7 @@ const state = {
     numberOfTiles: 224, // Will be updated from config
     lineSpacing: 14,
     maxTextWidth: 208, // 240 - 32
-    currentFont: 'variable_width', // Default font
+    currentFont: 'italic', // Default font
     fontConfig: {}, // Store the full font config
     specialChars: {} // Will be populated from config
 };

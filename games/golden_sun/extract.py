@@ -40,18 +40,22 @@ palette_golden_sun = [
 active_palette = palette_golden_sun
 
 
-def load_data(rom_file: str, offset: int = 0) -> tuple[bytes, bytes]:
+def load_data(rom_file: str, offset: int = 0) -> tuple[bytes, bytes, bytes]:
     with open(rom_file, "rb") as f:
 
         # Read italic font
         f.seek(0x032224 + offset)
         italic_font_data = f.read(italic_tile_bytes * italic_tiles)
 
+        # Read variable-width font widths
+        f.seek(0x05F484 + offset)
+        variable_width_font_widths = f.read(variable_width_tiles)
+
         # Read character data
         f.seek(0x003213D0 + offset)
         variable_width_font_data = f.read(tile_bytes * variable_width_tiles)
 
-    return variable_width_font_data, italic_font_data
+    return variable_width_font_data, variable_width_font_widths, italic_font_data
 
 
 def convert_4bpp_to_rgba(data, tile_size=8):
@@ -188,7 +192,7 @@ def generate_italic_font(data: bytes, output_file: str = "italic_font.png") -> N
     save_config(config, "config_italic.json")
 
 
-def generate_widths() -> None:
+def generate_widths(variable_width_font_widths: bytes) -> None:
     letters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[¥]^_±abcdefghijklmnopqrstuvwxyz{|}~"
     letter_dict = {l: 8 for i, l in enumerate(letters)}
     special_chars = [
@@ -209,21 +213,40 @@ def generate_widths() -> None:
     ]
     letter_dict.update({c: 8 for i, c in enumerate(special_chars)})
 
-    print(letter_dict)
+    all = list(letters) + special_chars
+    # variable_width_font_widths = swap_bytes(variable_width_font_widths)
+    binary_widths = [str(bin(variable_width_font_widths[i]))[2:] for i in range(len(variable_width_font_widths))]
+    binary_widths_str = "".join(binary_widths)
+    bytes_per_char = 3
+    dict = {}
+    for i, c in enumerate(all):
+        # for i in range(0, len(binary_widths_str), 3):
+        num = int(binary_widths_str[i * bytes_per_char : (i + 1) * bytes_per_char], 2)
+        print(c, num)
+        dict[c] = int(num)
+
     config = {
-        "widths": letter_dict,
+        "widths": dict,
         "special_chars": special_chars,
         "tile_width": 8,
         "tile_height": 8,
-        "number_of_tiles": len(letter_dict.keys()),
+        "number_of_tiles": len(dict.keys()),
     }
     save_config(config, "config.json")
 
 
 # Load data from ROM file
 i = 0
-variable_width_font_data, italic_font_data = load_data(rom_file, i)
+variable_width_font_data, variable_width_font_widths, italic_font_data = load_data(rom_file, i)
 
-generate_italic_font(italic_font_data)
-generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
-generate_widths()
+# for i in range(len(variable_width_font_widths)):
+#     byte = variable_width_font_widths[i]
+#     first_nibble = byte & 0x0F
+#     second_nibble = (byte >> 4) & 0x0F
+#     # print the width of the character in binary
+#     print(f"{first_nibble:04b} {second_nibble:04b}")
+#     print(f"{first_nibble} {second_nibble}")
+
+# generate_italic_font(italic_font_data)
+# generate_variable_width_font(variable_width_font_data, output_file=f"variable_width_font_{i}.png")
+generate_widths(variable_width_font_widths)
