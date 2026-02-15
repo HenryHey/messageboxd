@@ -1,6 +1,5 @@
 ---
 layout: howto
-game:  How to Final Fantasy VI
 ---
 
 I wanted the web textbox to feel like a real FF6 dialogue window, not just "similar pixels in a custom font."  
