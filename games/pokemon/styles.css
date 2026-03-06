@@ -1,9 +1,36 @@
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.zoom-btn {
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.zoom-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.zoom-level {
+    min-width: 2.5em;
+    text-align: center;
+}
+
 .text-input {
-    width: 300px;
+    width: 20ch;
     height: 120px;
     margin-bottom: 10px;
     overflow: hidden;
     resize: none;
+    font-family: monospace;
 }
 
 .canvas-container {
@@ -14,14 +41,15 @@
 }
 
 #myCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
 .controls-container {
-    margin-top: 170px;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;

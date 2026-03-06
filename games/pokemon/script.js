@@ -1,6 +1,9 @@
 const state = {
     canvasWidth: 160,
     canvasHeight: 144,
+    zoomLevel: 3,
+    minZoomLevel: 1,
+    maxZoomLevel: 5,
     tileSize: 8,
     tilesPerRow: 16,
     numberOfTiles: 128,
@@ -26,7 +29,12 @@ const supportedCharacters = new Set((visibleCharacters + " ").split(""));
 
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 const textInput = document.getElementById("textInput");
+const canvasContainer = document.querySelector(".canvas-container");
+const zoomInBtn = document.getElementById("zoomInBtn");
+const zoomOutBtn = document.getElementById("zoomOutBtn");
+const zoomLevel = document.getElementById("zoomLevel");
 
 const fontImage = new Image();
 const backgroundImage = new Image();
@@ -35,12 +43,37 @@ backgroundImage.src = "background.png";
 
 async function init() {
     registerEventListeners();
+    applyCanvasScale();
     await loadImages();
     updateText();
 }
 
 function registerEventListeners() {
     textInput.addEventListener("input", updateText);
+    zoomInBtn.addEventListener("click", () => changeZoom(1));
+    zoomOutBtn.addEventListener("click", () => changeZoom(-1));
+}
+
+function changeZoom(delta) {
+    const nextZoom = Math.max(
+        state.minZoomLevel,
+        Math.min(state.maxZoomLevel, state.zoomLevel + delta)
+    );
+    if (nextZoom === state.zoomLevel) return;
+
+    state.zoomLevel = nextZoom;
+    applyCanvasScale();
+}
+
+function applyCanvasScale() {
+    const scaledWidth = state.canvasWidth * state.zoomLevel;
+    const scaledHeight = state.canvasHeight * state.zoomLevel;
+
+    canvasContainer.style.width = `${scaledWidth}px`;
+    canvasContainer.style.height = `${scaledHeight}px`;
+    zoomLevel.textContent = `${state.zoomLevel}x`;
+    zoomInBtn.disabled = state.zoomLevel >= state.maxZoomLevel;
+    zoomOutBtn.disabled = state.zoomLevel <= state.minZoomLevel;
 }
 
 function loadImages() {
