@@ -35,6 +35,7 @@ const canvasContainer = document.querySelector(".canvas-container");
 const zoomInBtn = document.getElementById("zoomInBtn");
 const zoomOutBtn = document.getElementById("zoomOutBtn");
 const zoomLevel = document.getElementById("zoomLevel");
+const saveBtn = document.getElementById("saveBtn");
 
 const fontImage = new Image();
 const backgroundImage = new Image();
@@ -52,6 +53,7 @@ function registerEventListeners() {
     textInput.addEventListener("input", updateText);
     zoomInBtn.addEventListener("click", () => changeZoom(1));
     zoomOutBtn.addEventListener("click", () => changeZoom(-1));
+    saveBtn.addEventListener("click", saveCanvasImage);
 }
 
 function changeZoom(delta) {
@@ -74,6 +76,21 @@ function applyCanvasScale() {
     zoomLevel.textContent = `${state.zoomLevel}x`;
     zoomInBtn.disabled = state.zoomLevel >= state.maxZoomLevel;
     zoomOutBtn.disabled = state.zoomLevel <= state.minZoomLevel;
+}
+
+function saveCanvasImage() {
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = state.canvasWidth * state.zoomLevel;
+    exportCanvas.height = state.canvasHeight * state.zoomLevel;
+
+    const exportCtx = exportCanvas.getContext("2d");
+    exportCtx.imageSmoothingEnabled = false;
+    exportCtx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+
+    const link = document.createElement("a");
+    link.download = `pokemon-${state.zoomLevel}x.png`;
+    link.href = exportCanvas.toDataURL("image/png");
+    link.click();
 }
 
 function loadImages() {
