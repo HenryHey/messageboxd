@@ -146,6 +146,13 @@ p {
     margin-bottom: 1.5rem;
 }
 
+.intro-copy {
+    max-width: 65ch;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 a {
     color: var(--accent-color);
     text-decoration: none;
