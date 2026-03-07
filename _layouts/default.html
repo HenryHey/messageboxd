@@ -1,9 +1,11 @@
 <!doctype html>
-<html class="light-mode">
+<html lang="en" class="light-mode">
 
 <head>
     <meta charset="utf-8">
     <title>{{ page.title }}</title>
+    {% assign meta_description = page.description | default: page.excerpt | default: "messageboxd is a collection of old-school game-inspired text and image generators." | strip_html | strip_newlines | truncate: 160 %}
+    <meta name="description" content="{{ meta_description | escape }}">
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪧</text></svg>">
@@ -43,9 +45,9 @@
             </button>
         </div>
     </div>
-    <div class="container">
+    <main class="container">
         {{ content }}
-    </div>
+    </main>
 
     <footer class="site-footer">
         <div class="footer-content">

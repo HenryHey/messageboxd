@@ -1,5 +1,7 @@
 ---
 layout: howto
+game: FF6 How-To
+description: Technical breakdown of extracting FF6 font data from ROM and rendering authentic variable-width dialogue in the browser.
 ---
 
 I wanted the web textbox to feel like a real FF6 dialogue window, not just "similar pixels in a custom font."  
