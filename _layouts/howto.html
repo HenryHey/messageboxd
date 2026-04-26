@@ -3,11 +3,12 @@
 
 <head>
     <meta charset="utf-8">
-    {% assign site_url = site.url | default: "https://messageboxd.com" %}
+    {% assign site_origin = site.url | default: "https://henryhey.github.io" %}
+    {% assign site_root = site_origin | append: site.baseurl %}
     {% assign site_name = "messageboxd" %}
     {% assign page_name = page.title | default: page.game | default: site_name %}
     {% assign clean_page_url = page.url | default: "/" | replace: "index.html", "" %}
-    {% assign canonical_url = site_url | append: clean_page_url %}
+    {% assign canonical_url = site_origin | append: clean_page_url %}
     {% if page_name == site_name %}
     {% assign seo_title = "messageboxd - Retro Game Text Box Generators" %}
     {% else %}
@@ -27,7 +28,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="{{ seo_title | escape }}">
     <meta name="twitter:description" content="{{ meta_description | escape }}">
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="{{ "/assets/css/styles.css" | relative_url }}">
     {% if page.stylesheet %}
     <link rel="stylesheet" href="{{ page.stylesheet }}">
     {% endif %}
@@ -47,7 +48,7 @@
           "publisher": {
             "@type": "Organization",
             "name": {{ site_name | jsonify }},
-            "url": {{ site_url | jsonify }}
+            "url": {{ site_root | jsonify }}
           }
         }
     </script>
@@ -64,7 +65,7 @@
 <body>
     <div class="hero">
         <div class="hero-content">
-            <h1 class="hero-title"><a href="/">messageboxd</a></h1>
+            <h1 class="hero-title"><a href="{{ "/" | relative_url }}">messageboxd</a></h1>
             <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
